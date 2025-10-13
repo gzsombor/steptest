@@ -12,7 +12,7 @@ import org.junit.jupiter.api.DynamicTest;
 
 public class TestScenario implements Iterable<DynamicTest> {
 
-    record Step(String name, Callable<Void> task) {
+    record Step(String name, Callable<?> task) {
         public Step {
             Objects.requireNonNull(name, "Name cannot be null");
             Objects.requireNonNull(task, "The task cannot be null");
@@ -70,7 +70,7 @@ public class TestScenario implements Iterable<DynamicTest> {
      * Adds a step to the scenario, useful if the test can throw an exception.
      *
      */
-    public TestScenario addThrowingStep(String name, Callable<Void> callable) {
+    public TestScenario addThrowingStep(String name, Callable<?> callable) {
         steps.add(new Step(name, callable));
         return this;
     }
