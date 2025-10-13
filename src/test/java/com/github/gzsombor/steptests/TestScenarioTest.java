@@ -8,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.DisplayName;
@@ -18,8 +20,6 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.opentest4j.TestAbortedException;
 
 class TestScenarioTest {
@@ -56,12 +56,14 @@ class TestScenarioTest {
 
         @Test
         @DisplayName("Should create valid step with name and runnable")
-        void shouldCreateValidStepWithNameAndRunnable() {
-            Runnable runnable = emptyFunction;
+        void shouldCreateValidStepWithNameAndRunnable() throws Exception {
+            var counter = new AtomicInteger(0);
+            Runnable runnable = counter::incrementAndGet;
             TestScenario.Step step = new TestScenario.Step("Test", runnable);
 
             assertEquals("Test", step.name());
-            assertEquals(runnable, step.runnable());
+            step.task().call();
+            assertEquals(1, counter.get());
         }
 
         @Test
@@ -75,15 +77,23 @@ class TestScenarioTest {
         @DisplayName("Should throw exception when runnable is null")
         void shouldThrowExceptionWhenRunnableIsNull() {
             assertThrows(NullPointerException.class, 
-                () -> new TestScenario.Step("Test", null));
+                () -> new TestScenario.Step("Test", (Runnable) null));
+        }
+
+        @Test
+        @DisplayName("Should throw exception when runnable is null")
+        void shouldThrowExceptionWhenCallableIsNull() {
+            assertThrows(NullPointerException.class, 
+                () -> new TestScenario.Step("Test", (Callable<Void>) null));
         }
 
         @Test
         @DisplayName("Should throw exception when both name and runnable are null")
         void shouldThrowExceptionWhenBothNameAndRunnableAreNull() {
             assertThrows(NullPointerException.class, 
-                () -> new TestScenario.Step(null, null));
+                () -> new TestScenario.Step(null, (Runnable) null));
         }
+
     }
 
     @Nested
@@ -209,6 +219,22 @@ class TestScenarioTest {
             RuntimeException actualException = assertThrows(RuntimeException.class, test.getExecutable());
             assertEquals(expectedException, actualException);
         }
+
+        @Test
+        @DisplayName("Should propagate exception from throwin step runnable")
+        void shouldPropagateExceptionFromThrowingStep() {
+            var expectedException = new IOException("Test exception");
+            TestScenario scenario = new TestScenario();
+            scenario.addThrowingStep("Failing Step", () -> {
+                throw expectedException;
+            });
+
+            DynamicTest test = scenario.iterator().next();
+
+            var actualException = assertThrows(IOException.class, test.getExecutable());
+            assertEquals(expectedException, actualException);
+        }
+
     }
 
     @Nested
@@ -236,6 +262,26 @@ class TestScenarioTest {
         }
 
         @Test
+        @DisplayName("Should skip subsequent steps after failure")
+        void shouldSkipSubsequentStepsAfterFailureFromThrowingStep() {
+            AtomicInteger counter = new AtomicInteger(0);
+            TestScenario scenario = new TestScenario();
+            scenario.addThrowingStep("Failing Step", () -> {
+                counter.incrementAndGet();
+                throw new IOException("Failure");
+            });
+            scenario.addStep("Should be skipped", counter::incrementAndGet);
+            var iterator = scenario.iterator();
+
+            DynamicTest test1 = iterator.next();
+            DynamicTest test2 = iterator.next();
+
+            assertThrows(IOException.class, test1.getExecutable());
+            assertThrows(TestAbortedException.class, test2.getExecutable());
+            assertEquals(1, counter.get()); // Only first step executed
+        }
+
+        @Test
         @DisplayName("Should include step name in skip message")
         void shouldIncludeStepNameInSkipMessage() {
             TestScenario scenario = new TestScenario();
@@ -249,6 +295,24 @@ class TestScenarioTest {
             DynamicTest test2 = iterator.next();
 
             assertThrows(RuntimeException.class, test1.getExecutable());
+            TestAbortedException exception = assertThrows(TestAbortedException.class, test2.getExecutable());
+            assertTrue(exception.getMessage().contains("Skipped Step"));
+        }
+
+        @Test
+        @DisplayName("Should include step name in skip message")
+        void shouldIncludeStepNameInSkipMessageForThrowingStep() {
+            TestScenario scenario = new TestScenario();
+            scenario.addThrowingStep("Failing Step", () -> {
+                throw new IOException("Failure");
+            });
+            scenario.addStep("Skipped Step", emptyFunction);
+            var iterator = scenario.iterator();
+
+            DynamicTest test1 = iterator.next();
+            DynamicTest test2 = iterator.next();
+
+            assertThrows(IOException.class, test1.getExecutable());
             TestAbortedException exception = assertThrows(TestAbortedException.class, test2.getExecutable());
             assertTrue(exception.getMessage().contains("Skipped Step"));
         }
@@ -273,6 +337,26 @@ class TestScenarioTest {
             assertThrows(TestAbortedException.class, test3.getExecutable());
         }
 
+        @Test
+        @DisplayName("Should handle multiple failures in sequence")
+        void shouldHandleMultipleFailuresInSequenceForThrowingStep() {
+            TestScenario scenario = new TestScenario();
+            scenario.addThrowingStep("Failing Step", () -> {
+                throw new IOException("First failure");
+            });
+            scenario.addStep("Skipped Step 1", emptyFunction);
+            scenario.addStep("Skipped Step 2", emptyFunction);
+            var iterator = scenario.iterator();
+
+            DynamicTest test1 = iterator.next();
+            DynamicTest test2 = iterator.next();
+            DynamicTest test3 = iterator.next();
+
+            assertThrows(IOException.class, test1.getExecutable());
+            assertThrows(TestAbortedException.class, test2.getExecutable());
+            assertThrows(TestAbortedException.class, test3.getExecutable());
+        }
+        
         @Test
         @DisplayName("Should continue normal execution after successful steps")
         void shouldContinueNormalExecutionAfterSuccessfulSteps() {
@@ -376,6 +460,15 @@ class TestScenarioTest {
 
             assertThrows(NullPointerException.class, 
                 () -> scenario.addStep("Test", null));
+        }
+
+        @Test
+        @DisplayName("Should handle null runnable in addStep")
+        void shouldHandleNullRunnableInAddThrowingStep() {
+            TestScenario scenario = new TestScenario();
+
+            assertThrows(NullPointerException.class, 
+                () -> scenario.addThrowingStep("Test", null));
         }
 
         @Test

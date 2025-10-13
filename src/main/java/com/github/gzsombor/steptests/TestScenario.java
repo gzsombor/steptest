@@ -5,16 +5,25 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.Callable;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DynamicTest;
 
 public class TestScenario implements Iterable<DynamicTest> {
 
-    record Step(String name, Runnable runnable) {
+    record Step(String name, Callable<Void> task) {
         public Step {
             Objects.requireNonNull(name, "Name cannot be null");
-            Objects.requireNonNull(runnable, "Runnable cannot be null");
+            Objects.requireNonNull(task, "The task cannot be null");
+        }
+        
+        public Step(String name, Runnable runnable) {
+            this(name, () -> { 
+                runnable.run();
+                return null;
+            });
+            Objects.requireNonNull(runnable, "The runnable cannot be null");
         }
     }
 
@@ -48,7 +57,7 @@ public class TestScenario implements Iterable<DynamicTest> {
             return DynamicTest.dynamicTest(String.format(Locale.ROOT, "[%1$s/%2$s] %3$s", index, scenario.steps.size(), step.name), () -> {
                 Assumptions.assumeTrue(successFull, "Previous step failed, skipping this step: " + step.name);
                 try {
-                    step.runnable.run();
+                    step.task.call();
                 } catch (Throwable t) {
                     successFull = false;
                     throw t;
@@ -57,6 +66,19 @@ public class TestScenario implements Iterable<DynamicTest> {
         }
     }
 
+    /**
+     * Adds a step to the scenario, useful if the test can throw an exception.
+     *
+     */
+    public TestScenario addThrowingStep(String name, Callable<Void> callable) {
+        steps.add(new Step(name, callable));
+        return this;
+    }
+
+    /**
+     * Adds a step to the scenario, useful if the test cannot throw an exception.
+     *
+     */
     public TestScenario addStep(String name, Runnable runnable) {
         steps.add(new Step(name, runnable));
         return this;
