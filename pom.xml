@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.gzsombor</groupId>
   <artifactId>steptest</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.2</version>
   <name>StepTest</name>
   <description>Provides easy way to construct multistep tests</description>
   
