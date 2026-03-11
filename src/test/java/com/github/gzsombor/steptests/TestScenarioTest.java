@@ -35,7 +35,7 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should create empty scenario with default constructor")
         void shouldCreateEmptyScenarioWithDefaultConstructor() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
 
             assertFalse(scenario.iterator().hasNext());
         }
@@ -43,7 +43,7 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should create scenario ready for step addition")
         void shouldCreateScenarioReadyForStepAddition() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
 
             scenario.addStep("Test step", emptyFunction);
             assertTrue(scenario.iterator().hasNext());
@@ -57,9 +57,9 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should create valid step with name and runnable")
         void shouldCreateValidStepWithNameAndRunnable() throws Exception {
-            var counter = new AtomicInteger(0);
-            Runnable runnable = counter::incrementAndGet;
-            TestScenario.Step step = new TestScenario.Step("Test", runnable);
+            final var counter = new AtomicInteger(0);
+            final Runnable runnable = counter::incrementAndGet;
+            final TestScenario.Step step = new TestScenario.Step("Test", runnable);
 
             assertEquals("Test", step.name());
             step.task().call();
@@ -69,29 +69,25 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should throw exception when name is null")
         void shouldThrowExceptionWhenNameIsNull() {
-            assertThrows(NullPointerException.class, 
-                () -> new TestScenario.Step(null, emptyFunction));
+            assertThrows(NullPointerException.class, () -> new TestScenario.Step(null, emptyFunction));
         }
 
         @Test
         @DisplayName("Should throw exception when runnable is null")
         void shouldThrowExceptionWhenRunnableIsNull() {
-            assertThrows(NullPointerException.class, 
-                () -> new TestScenario.Step("Test", (Runnable) null));
+            assertThrows(NullPointerException.class, () -> new TestScenario.Step("Test", (Runnable) null));
         }
 
         @Test
         @DisplayName("Should throw exception when runnable is null")
         void shouldThrowExceptionWhenCallableIsNull() {
-            assertThrows(NullPointerException.class, 
-                () -> new TestScenario.Step("Test", (Callable<Void>) null));
+            assertThrows(NullPointerException.class, () -> new TestScenario.Step("Test", (Callable<Void>) null));
         }
 
         @Test
         @DisplayName("Should throw exception when both name and runnable are null")
         void shouldThrowExceptionWhenBothNameAndRunnableAreNull() {
-            assertThrows(NullPointerException.class, 
-                () -> new TestScenario.Step(null, (Runnable) null));
+            assertThrows(NullPointerException.class, () -> new TestScenario.Step(null, (Runnable) null));
         }
 
     }
@@ -103,7 +99,7 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should return true for hasNext when steps exist")
         void shouldReturnTrueForHasNextWhenStepsExist() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Step 1", emptyFunction);
 
             assertTrue(scenario.iterator().hasNext());
@@ -112,9 +108,9 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should return false for hasNext after all steps consumed")
         void shouldReturnFalseForHasNextAfterAllStepsConsumed() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Step 1", emptyFunction);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
             assertTrue(iterator.hasNext());
             iterator.next(); // Consume the step
@@ -124,10 +120,10 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should return DynamicTest from next method")
         void shouldReturnDynamicTestFromNextMethod() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Test Step", emptyFunction);
 
-            DynamicTest test = scenario.iterator().next();
+            final DynamicTest test = scenario.iterator().next();
 
             assertNotNull(test);
             assertTrue(test.getDisplayName().contains("Test Step"));
@@ -136,13 +132,13 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should format test display name correctly")
         void shouldFormatTestDisplayNameCorrectly() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("First Step", emptyFunction);
             scenario.addStep("Second Step", emptyFunction);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
 
             assertEquals("[1/2] First Step", test1.getDisplayName());
             assertEquals("[2/2] Second Step", test2.getDisplayName());
@@ -151,10 +147,10 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should handle single step correctly")
         void shouldHandleSingleStepCorrectly() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Only Step", emptyFunction);
 
-            DynamicTest test = scenario.iterator().next();
+            final DynamicTest test = scenario.iterator().next();
 
             assertEquals("[1/1] Only Step", test.getDisplayName());
         }
@@ -167,11 +163,11 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should execute step runnable successfully")
         void shouldExecuteStepRunnableSuccessfully() {
-            AtomicInteger counter = new AtomicInteger(0);
-            TestScenario scenario = new TestScenario();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Increment", counter::incrementAndGet);
 
-            DynamicTest test = scenario.iterator().next();
+            final DynamicTest test = scenario.iterator().next();
 
             assertDoesNotThrow(test.getExecutable());
             assertEquals(1, counter.get());
@@ -180,14 +176,14 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should execute multiple steps in sequence")
         void shouldExecuteMultipleStepsInSequence() {
-            List<String> executionOrder = new ArrayList<>();
-            TestScenario scenario = new TestScenario();
+            final List<String> executionOrder = new ArrayList<>();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Step 1", () -> executionOrder.add("Step 1"));
             scenario.addStep("Step 2", () -> executionOrder.add("Step 2"));
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
 
             assertDoesNotThrow(test1.getExecutable());
             assertDoesNotThrow(test2.getExecutable());
@@ -197,10 +193,10 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should execute empty function without errors")
         void shouldExecuteEmptyFunctionWithoutErrors() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Empty Function", emptyFunction);
 
-            DynamicTest test = scenario.iterator().next();
+            final DynamicTest test = scenario.iterator().next();
 
             assertDoesNotThrow(test.getExecutable());
         }
@@ -208,30 +204,30 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should propagate exception from step runnable")
         void shouldPropagateExceptionFromStepRunnable() {
-            RuntimeException expectedException = new RuntimeException("Test exception");
-            TestScenario scenario = new TestScenario();
+            final RuntimeException expectedException = new RuntimeException("Test exception");
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Failing Step", () -> {
                 throw expectedException;
             });
 
-            DynamicTest test = scenario.iterator().next();
+            final DynamicTest test = scenario.iterator().next();
 
-            RuntimeException actualException = assertThrows(RuntimeException.class, test.getExecutable());
+            final RuntimeException actualException = assertThrows(RuntimeException.class, test.getExecutable());
             assertEquals(expectedException, actualException);
         }
 
         @Test
         @DisplayName("Should propagate exception from throwin step runnable")
         void shouldPropagateExceptionFromThrowingStep() {
-            var expectedException = new IOException("Test exception");
-            TestScenario scenario = new TestScenario();
+            final var expectedException = new IOException("Test exception");
+            final TestScenario scenario = new TestScenario();
             scenario.addThrowingStep("Failing Step", () -> {
                 throw expectedException;
             });
 
-            DynamicTest test = scenario.iterator().next();
+            final DynamicTest test = scenario.iterator().next();
 
-            var actualException = assertThrows(IOException.class, test.getExecutable());
+            final var actualException = assertThrows(IOException.class, test.getExecutable());
             assertEquals(expectedException, actualException);
         }
 
@@ -244,17 +240,17 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should skip subsequent steps after failure")
         void shouldSkipSubsequentStepsAfterFailure() {
-            AtomicInteger counter = new AtomicInteger(0);
-            TestScenario scenario = new TestScenario();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Failing Step", () -> {
                 counter.incrementAndGet();
                 throw new RuntimeException("Failure");
             });
             scenario.addStep("Should be skipped", counter::incrementAndGet);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
 
             assertThrows(RuntimeException.class, test1.getExecutable());
             assertThrows(TestAbortedException.class, test2.getExecutable());
@@ -264,17 +260,17 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should skip subsequent steps after failure")
         void shouldSkipSubsequentStepsAfterFailureFromThrowingStep() {
-            AtomicInteger counter = new AtomicInteger(0);
-            TestScenario scenario = new TestScenario();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final TestScenario scenario = new TestScenario();
             scenario.addThrowingStep("Failing Step", () -> {
                 counter.incrementAndGet();
                 throw new IOException("Failure");
             });
             scenario.addStep("Should be skipped", counter::incrementAndGet);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
 
             assertThrows(IOException.class, test1.getExecutable());
             assertThrows(TestAbortedException.class, test2.getExecutable());
@@ -284,53 +280,53 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should include step name in skip message")
         void shouldIncludeStepNameInSkipMessage() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Failing Step", () -> {
                 throw new RuntimeException("Failure");
             });
             scenario.addStep("Skipped Step", emptyFunction);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
 
             assertThrows(RuntimeException.class, test1.getExecutable());
-            TestAbortedException exception = assertThrows(TestAbortedException.class, test2.getExecutable());
+            final TestAbortedException exception = assertThrows(TestAbortedException.class, test2.getExecutable());
             assertTrue(exception.getMessage().contains("Skipped Step"));
         }
 
         @Test
         @DisplayName("Should include step name in skip message")
         void shouldIncludeStepNameInSkipMessageForThrowingStep() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addThrowingStep("Failing Step", () -> {
                 throw new IOException("Failure");
             });
             scenario.addStep("Skipped Step", emptyFunction);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
 
             assertThrows(IOException.class, test1.getExecutable());
-            TestAbortedException exception = assertThrows(TestAbortedException.class, test2.getExecutable());
+            final TestAbortedException exception = assertThrows(TestAbortedException.class, test2.getExecutable());
             assertTrue(exception.getMessage().contains("Skipped Step"));
         }
 
         @Test
         @DisplayName("Should handle multiple failures in sequence")
         void shouldHandleMultipleFailuresInSequence() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Failing Step", () -> {
                 throw new RuntimeException("First failure");
             });
             scenario.addStep("Skipped Step 1", emptyFunction);
             scenario.addStep("Skipped Step 2", emptyFunction);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
-            DynamicTest test3 = iterator.next();
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
+            final DynamicTest test3 = iterator.next();
 
             assertThrows(RuntimeException.class, test1.getExecutable());
             assertThrows(TestAbortedException.class, test2.getExecutable());
@@ -340,36 +336,36 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should handle multiple failures in sequence")
         void shouldHandleMultipleFailuresInSequenceForThrowingStep() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addThrowingStep("Failing Step", () -> {
                 throw new IOException("First failure");
             });
             scenario.addStep("Skipped Step 1", emptyFunction);
             scenario.addStep("Skipped Step 2", emptyFunction);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
-            DynamicTest test3 = iterator.next();
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
+            final DynamicTest test3 = iterator.next();
 
             assertThrows(IOException.class, test1.getExecutable());
             assertThrows(TestAbortedException.class, test2.getExecutable());
             assertThrows(TestAbortedException.class, test3.getExecutable());
         }
-        
+
         @Test
         @DisplayName("Should continue normal execution after successful steps")
         void shouldContinueNormalExecutionAfterSuccessfulSteps() {
-            AtomicInteger counter = new AtomicInteger(0);
-            TestScenario scenario = new TestScenario();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Success Step 1", counter::incrementAndGet);
             scenario.addStep("Success Step 2", counter::incrementAndGet);
             scenario.addStep("Success Step 3", counter::incrementAndGet);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
-            DynamicTest test3 = iterator.next();
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
+            final DynamicTest test3 = iterator.next();
 
             assertDoesNotThrow(test1.getExecutable());
             assertDoesNotThrow(test2.getExecutable());
@@ -385,15 +381,15 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should add multiple steps to scenario")
         void shouldAddMultipleStepsToScenario() {
-            AtomicInteger counter = new AtomicInteger(0);
-            TestScenario scenario = new TestScenario();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final TestScenario scenario = new TestScenario();
 
             scenario.addStep("Step 1", counter::incrementAndGet);
             scenario.addStep("Step 2", counter::incrementAndGet);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
 
             assertDoesNotThrow(test1.getExecutable());
             assertDoesNotThrow(test2.getExecutable());
@@ -403,9 +399,9 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should return same scenario instance for method chaining")
         void shouldReturnSameScenarioInstanceForMethodChaining() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
 
-            TestScenario result = scenario.addStep("Step 1", emptyFunction);
+            final TestScenario result = scenario.addStep("Step 1", emptyFunction);
 
             assertSame(scenario, result);
         }
@@ -413,14 +409,12 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should allow chaining multiple addStep calls")
         void shouldAllowChainingMultipleAddStepCalls() {
-            AtomicInteger counter = new AtomicInteger(0);
-            TestScenario scenario = new TestScenario()
-                .addStep("Step 1", counter::incrementAndGet)
-                .addStep("Step 2", counter::incrementAndGet)
-                .addStep("Step 3", counter::incrementAndGet);
+            final AtomicInteger counter = new AtomicInteger(0);
+            final TestScenario scenario = new TestScenario().addStep("Step 1", counter::incrementAndGet).addStep("Step 2", counter::incrementAndGet).addStep("Step 3",
+                    counter::incrementAndGet);
 
             // Execute all steps
-            for (var test : scenario) {
+            for (final var test : scenario) {
                 assertDoesNotThrow(test.getExecutable());
             }
 
@@ -430,14 +424,14 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should add step after iterator has started")
         void shouldAddStepAfterIteratorHasStarted() {
-            AtomicInteger counter = new AtomicInteger(0);
-            TestScenario scenario = new TestScenario();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Initial Step", counter::incrementAndGet);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
-            DynamicTest test1 = iterator.next();
+            final DynamicTest test1 = iterator.next();
             scenario.addStep("Added Step", counter::incrementAndGet);
-            DynamicTest test2 = iterator.next();
+            final DynamicTest test2 = iterator.next();
 
             assertDoesNotThrow(test1.getExecutable());
             assertDoesNotThrow(test2.getExecutable());
@@ -447,40 +441,35 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should handle null name in addStep")
         void shouldHandleNullNameInAddStep() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
 
-            assertThrows(NullPointerException.class, 
-                () -> scenario.addStep(null, emptyFunction));
+            assertThrows(NullPointerException.class, () -> scenario.addStep(null, emptyFunction));
         }
 
         @Test
         @DisplayName("Should handle null runnable in addStep")
         void shouldHandleNullRunnableInAddStep() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
 
-            assertThrows(NullPointerException.class, 
-                () -> scenario.addStep("Test", null));
+            assertThrows(NullPointerException.class, () -> scenario.addStep("Test", null));
         }
 
         @Test
         @DisplayName("Should handle null runnable in addStep")
         void shouldHandleNullRunnableInAddThrowingStep() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
 
-            assertThrows(NullPointerException.class, 
-                () -> scenario.addThrowingStep("Test", null));
+            assertThrows(NullPointerException.class, () -> scenario.addThrowingStep("Test", null));
         }
 
         @Test
         @DisplayName("Should maintain correct order of added steps")
         void shouldMaintainCorrectOrderOfAddedSteps() {
-            List<String> executionOrder = new ArrayList<>();
-            TestScenario scenario = new TestScenario()
-                .addStep("First", () -> executionOrder.add("First"))
-                .addStep("Second", () -> executionOrder.add("Second"))
-                .addStep("Third", () -> executionOrder.add("Third"));
-            
-            for (var test : scenario) {
+            final List<String> executionOrder = new ArrayList<>();
+            final TestScenario scenario = new TestScenario().addStep("First", () -> executionOrder.add("First")).addStep("Second", () -> executionOrder.add("Second"))
+                    .addStep("Third", () -> executionOrder.add("Third"));
+
+            for (final var test : scenario) {
                 assertDoesNotThrow(test.getExecutable());
             }
 
@@ -495,10 +484,10 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should handle empty step name")
         void shouldHandleEmptyStepName() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("", emptyFunction);
 
-            DynamicTest test = scenario.iterator().next();
+            final DynamicTest test = scenario.iterator().next();
 
             assertEquals("[1/1] ", test.getDisplayName());
         }
@@ -506,11 +495,11 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should handle step with special characters in name")
         void shouldHandleStepWithSpecialCharactersInName() {
-            String specialName = "Test with émojis 🚀 and symbols @#$%";
-            TestScenario scenario = new TestScenario();
+            final String specialName = "Test with émojis 🚀 and symbols @#$%";
+            final TestScenario scenario = new TestScenario();
             scenario.addStep(specialName, emptyFunction);
 
-            DynamicTest test = scenario.iterator().next();
+            final DynamicTest test = scenario.iterator().next();
 
             assertTrue(test.getDisplayName().contains(specialName));
         }
@@ -518,8 +507,8 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should handle large number of steps")
         void shouldHandleLargeNumberOfSteps() {
-            TestScenario scenario = new TestScenario();
-            AtomicInteger counter = new AtomicInteger(0);
+            final TestScenario scenario = new TestScenario();
+            final AtomicInteger counter = new AtomicInteger(0);
 
             // Add 100 steps
             for (int i = 0; i < 100; i++) {
@@ -528,7 +517,7 @@ class TestScenarioTest {
 
             // Execute all steps
             int stepCount = 0;
-            for (var test : scenario) {
+            for (final var test : scenario) {
                 assertDoesNotThrow(test.getExecutable());
                 stepCount++;
             }
@@ -540,10 +529,10 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should maintain correct step numbering with dynamic additions")
         void shouldMaintainCorrectStepNumberingWithDynamicAdditions() {
-            TestScenario scenario = new TestScenario();
+            final TestScenario scenario = new TestScenario();
             scenario.addStep("Step 1", emptyFunction);
             scenario.addStep("Step 2", emptyFunction);
-            var iterator = scenario.iterator();
+            final var iterator = scenario.iterator();
 
             assertEquals("[1/2] Step 1", iterator.next().getDisplayName());
             assertEquals("[2/2] Step 2", iterator.next().getDisplayName());
@@ -552,21 +541,21 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should handle mixed successful and failing steps")
         void shouldHandleMixedSuccessfulAndFailingSteps() {
-            AtomicInteger counter = new AtomicInteger(0);
-            TestScenario scenario = new TestScenario()
-                .addStep("Success 1", counter::incrementAndGet)
-                .addStep("Success 2", counter::incrementAndGet)
-                .addStep("Failure", () -> {
-                    counter.incrementAndGet();
-                    throw new RuntimeException("Test failure");
-                })
-                .addStep("Skipped", counter::incrementAndGet);
-            var iterator = scenario.iterator();
-            
-            DynamicTest test1 = iterator.next();
-            DynamicTest test2 = iterator.next();
-            DynamicTest test3 = iterator.next();
-            DynamicTest test4 = iterator.next();
+            final AtomicInteger counter = new AtomicInteger(0);
+            final TestScenario scenario = new TestScenario() //
+                    .addStep("Success 1", counter::incrementAndGet) //
+                    .addStep("Success 2", counter::incrementAndGet) //
+                    .addStep("Failure", () -> {
+                        counter.incrementAndGet();
+                        throw new RuntimeException("Test failure");
+                    }) //
+                    .addStep("Skipped", counter::incrementAndGet);
+            final var iterator = scenario.iterator();
+
+            final DynamicTest test1 = iterator.next();
+            final DynamicTest test2 = iterator.next();
+            final DynamicTest test3 = iterator.next();
+            final DynamicTest test4 = iterator.next();
 
             assertDoesNotThrow(test1.getExecutable());
             assertDoesNotThrow(test2.getExecutable());
@@ -578,11 +567,11 @@ class TestScenarioTest {
         @Test
         @DisplayName("Should handle very long step names")
         void shouldHandleVeryLongStepNames() {
-            String longName = "This is a very long step name that contains many characters and should still work correctly ".repeat(5);
-            TestScenario scenario = new TestScenario();
+            final String longName = "This is a very long step name that contains many characters and should still work correctly ".repeat(5);
+            final TestScenario scenario = new TestScenario();
             scenario.addStep(longName, emptyFunction);
 
-            DynamicTest test = scenario.iterator().next();
+            final DynamicTest test = scenario.iterator().next();
 
             assertTrue(test.getDisplayName().contains(longName));
             assertEquals("[1/1] " + longName, test.getDisplayName());
@@ -592,22 +581,22 @@ class TestScenarioTest {
     @TestFactory
     @DisplayName("Dynamic Test Factory Example")
     Iterable<DynamicTest> dynamicTestFactoryExample() {
-        AtomicInteger counter = new AtomicInteger(0);
-        return new TestScenario()
-            .addStep("Initialize", () -> counter.set(10))
-            .addStep("Increment", counter::incrementAndGet)
-            .addStep("Verify", () -> assertEquals(11, counter.get()));
+        final AtomicInteger counter = new AtomicInteger(0);
+        return new TestScenario()//
+                .addStep("Initialize", () -> counter.set(10)) //
+                .addStep("Increment", counter::incrementAndGet) //
+                .addStep("Verify", () -> assertEquals(11, counter.get()));
     }
 
     @TestFactory
     @DisplayName("Parametrized Test Scenario Example")
     Iterable<DynamicContainer> dynamicNodeFactoryExample() {
         return new ParametrizedTestScenario<>(List.of(1, 2, 5), value -> {
-            AtomicInteger counter = new AtomicInteger(0);
-            return new TestScenario()
-                .addStep("Initialize", () -> counter.set(10))
-                .addStep("Increment", () -> counter.addAndGet(value))
-                .addStep("Verify", () -> assertEquals(10 + value, counter.get()));
+            final AtomicInteger counter = new AtomicInteger(0);
+            return new TestScenario() //
+                    .addStep("Initialize", () -> counter.set(10)) //
+                    .addStep("Increment", () -> counter.addAndGet(value)) //
+                    .addStep("Verify", () -> assertEquals(10 + value, counter.get()));
         });
     }
 
