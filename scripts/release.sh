@@ -25,10 +25,11 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-CRED_FILE="$SCRIPT_DIR/maven-central.properties"
+CRED_FILE="$PROJECT_DIR/maven-central.properties"
 
 KEY_ID=""
 PASSPHRASE=""
+DRY_RUN=""
 
 usage() {
   cat <<'EOF'
@@ -90,11 +91,13 @@ fi
 CENTRAL_USERNAME="${CENTRAL_USERNAME:-}"
 CENTRAL_PASSWORD="${CENTRAL_PASSWORD:-}"
 if [[ -z "$CENTRAL_USERNAME" && -f "$CRED_FILE" ]]; then
-  while IFS='=' read -r k v; do
-    [[ -z "$k" || "$k" == \#* ]] && continue
-    case "$k" in
-      central.username) CENTRAL_USERNAME="$v" ;;
-      central.password) CENTRAL_PASSWORD="$v" ;;
+  while IFS= read -r line; do
+    [[ -z "$line" || "$line" == \#* ]] && continue
+    key="${line%%=*}"
+    value="${line#*=}"
+    case "$key" in
+      central.username) CENTRAL_USERNAME="$value" ;;
+      central.password) CENTRAL_PASSWORD="$value" ;;
     esac
   done < "$CRED_FILE"
 fi
