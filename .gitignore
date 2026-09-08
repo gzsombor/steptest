@@ -3,3 +3,6 @@ target
 .settings
 .project
 
+# Local Maven Central credentials (see scripts/release.sh)
+maven-central.properties
+
