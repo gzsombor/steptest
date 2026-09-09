@@ -16,4 +16,4 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     - name: Build with Maven
-      run: mvn -B -V clean verify --file pom.xml
+      run: mvn -B -V clean verify --file pom.xml -Dgpg.skip=true
